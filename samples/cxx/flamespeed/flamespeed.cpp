@@ -48,7 +48,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         //-------- step 1: create the flow -------------
 
-        IonFlow flow(gas);
+        // IonFlow flow(gas);
+        StFlow flow(gas);
         flow.setFreeFlow();
 
         // create an initial grid
@@ -65,7 +66,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // specify the objects to use to compute kinetic rates and
         // transport properties
 
-        std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
+        // std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
+        std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
         // std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
 
         flow.setTransport(*trmix);
