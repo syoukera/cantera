@@ -7,6 +7,7 @@
 #include "cantera/oneD/Sim1D.h"
 #include "cantera/oneD/Boundary1D.h"
 #include "cantera/oneD/StFlow.h"
+#include "cantera/oneD/IonFlow.h"
 #include "cantera/thermo/IdealGasPhase.h"
 #include "cantera/transport.h"
 #include <fstream>
@@ -47,7 +48,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         //-------- step 1: create the flow -------------
 
-        StFlow flow(gas);
+        IonFlow flow(gas);
         flow.setFreeFlow();
 
         // create an initial grid
@@ -64,8 +65,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // specify the objects to use to compute kinetic rates and
         // transport properties
 
-        std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
-        std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
+        std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
+        // std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
 
         flow.setTransport(*trmix);
         flow.setKinetics(*sol->kinetics());
@@ -133,21 +134,21 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         print("Flame speed with mixture-averaged transport: {} m/s\n",
               flameSpeed_mix);
 
-        // now switch to multicomponent transport
-        flow.setTransport(*trmulti);
-        flame.solve(loglevel, refine_grid);
-        double flameSpeed_multi = flame.value(flowdomain,
-                                              flow.componentIndex("velocity"),0);
-        print("Flame speed with multicomponent transport: {} m/s\n",
-              flameSpeed_multi);
+        // // now switch to multicomponent transport
+        // flow.setTransport(*trmulti);
+        // flame.solve(loglevel, refine_grid);
+        // double flameSpeed_multi = flame.value(flowdomain,
+        //                                       flow.componentIndex("velocity"),0);
+        // print("Flame speed with multicomponent transport: {} m/s\n",
+        //       flameSpeed_multi);
 
-        // now enable Soret diffusion
-        flow.enableSoret(true);
-        flame.solve(loglevel, refine_grid);
-        double flameSpeed_full = flame.value(flowdomain,
-                                             flow.componentIndex("velocity"),0);
-        print("Flame speed with multicomponent transport + Soret: {} m/s\n",
-              flameSpeed_full);
+        // // now enable Soret diffusion
+        // flow.enableSoret(true);
+        // flame.solve(loglevel, refine_grid);
+        // double flameSpeed_full = flame.value(flowdomain,
+        //                                      flow.componentIndex("velocity"),0);
+        // print("Flame speed with multicomponent transport + Soret: {} m/s\n",
+        //       flameSpeed_full);
 
         vector_fp zvec,Tvec,COvec,CO2vec,Uvec;
 

@@ -32,6 +32,9 @@ class IonFlow : public StFlow
 {
 public:
     IonFlow(IdealGasPhase* ph = 0, size_t nsp = 1, size_t points = 1);
+
+    IonFlow(shared_ptr<ThermoPhase> th, size_t nsp = 1, size_t points = 1) :
+        IonFlow(static_cast<IdealGasPhase*>(th.get()), nsp, points) {}
     //! set the solving stage
     virtual void setSolvingStage(const size_t phase);
 
