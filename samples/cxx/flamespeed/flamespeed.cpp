@@ -18,7 +18,7 @@ using fmt::print;
 int flamespeed(double phi, bool refine_grid, int loglevel)
 {
     try {
-        auto sol = newSolution("gri30.yaml", "gri30", "None");
+        auto sol = newSolution("gri30_ion.yaml", "gas", "None");
         auto gas = sol->thermo();
         double temp = 300.0; // K
         double pressure = 1.0*OneAtm; //atm
@@ -48,8 +48,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         //-------- step 1: create the flow -------------
 
-        // IonFlow flow(gas);
-        StFlow flow(gas);
+        IonFlow flow(gas);
+        // StFlow flow(gas);
         flow.setFreeFlow();
 
         // create an initial grid
@@ -66,8 +66,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // specify the objects to use to compute kinetic rates and
         // transport properties
 
-        // std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
-        std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
+        std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
+        // std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
         // std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
 
         flow.setTransport(*trmix);
@@ -130,7 +130,11 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         flame.setFixedTemperature(0.5 * (temp + Tad));
         flow.solveEnergyEqn();
 
+        flow.setSolvingStage(1);
         flame.solve(loglevel,refine_grid);
+        flow.setSolvingStage(2);
+        flame.solve(loglevel,refine_grid);
+
         double flameSpeed_mix = flame.value(flowdomain,
                                             flow.componentIndex("velocity"),0);
         print("Flame speed with mixture-averaged transport: {} m/s\n",
