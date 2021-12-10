@@ -158,10 +158,9 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // print("Flame speed with multicomponent transport + Soret: {} m/s\n",
         //       flameSpeed_full);
 
-        vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
 
         print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
-              "z (m)", "T (K)", "U (m/s)", "Y(CO)");
+              "z (m)", "T (K)", "Y(E)", "eField (V/m)");
         for (size_t n = 0; n < flow.nPoints(); n++) {
             Tvec.push_back(flame.value(flowdomain,flow.componentIndex("T"),n));
             Evec.push_back(flame.value(flowdomain,
@@ -172,7 +171,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
                                        flow.componentIndex("velocity"),n));
             zvec.push_back(flow.grid(n));
             print("{:9.6f}\t{:8.3f}\t{:5.3f}\t{:7.5f}\n",
-                  flow.grid(n), Tvec[n], Uvec[n], Evec[n]);
+                  flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
         }
 
         print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
