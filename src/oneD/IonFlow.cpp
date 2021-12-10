@@ -205,13 +205,22 @@ void IonFlow::evalResidual(double* x, double* rsd, int* diag,
 void IonFlow::solveElectricField(size_t j)
 {
     bool changed = false;
+
+    // if j was not given
     if (j == npos) {
+
+        // for all grid poins
         for (size_t i = 0; i < m_points; i++) {
+            
+            // if electric field is not solved at i-th grid
             if (!m_do_electric_field[i]) {
                 changed = true;
             }
+
+            // set i-th grid as electric field should be solved
             m_do_electric_field[i] = true;
         }
+    // if j was given
     } else {
         if (!m_do_electric_field[j]) {
             changed = true;
@@ -222,6 +231,9 @@ void IonFlow::solveElectricField(size_t j)
     m_refiner->setActive(c_offset_V, true);
     m_refiner->setActive(c_offset_T, true);
     m_refiner->setActive(c_offset_E, true);
+
+    // this is only false at m_do_electri_field was True
+    // namely, true at m_do_electric_field changed from False to True
     if (changed) {
         needJacUpdate();
     }
