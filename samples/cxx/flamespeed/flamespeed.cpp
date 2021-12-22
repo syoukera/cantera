@@ -158,6 +158,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // print("Flame speed with multicomponent transport + Soret: {} m/s\n",
         //       flameSpeed_full);
 
+        vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
 
         print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
               "z (m)", "T (K)", "Y(E)", "eField (V/m)");
@@ -180,7 +181,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         std::ofstream outfile("flamespeed.csv", std::ios::trunc);
         outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
         for (size_t n = 0; n < flow.nPoints(); n++) {
-            print(outfile, " {:11.3e}, {:11.3e}, {:11.3e}, {:11.3e}, {:11.3e}\n",
+            print(outfile, " {:11.3e}, {:11.3e}, {:11.3e}, {:11.3f}, {:11.3e}\n",
                   flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
         }
     } catch (CanteraError& err) {
