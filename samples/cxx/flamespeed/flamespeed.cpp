@@ -163,15 +163,15 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
               "z (m)", "T (K)", "Y(E)", "eField (V/m)");
         for (size_t n = 0; n < flow.nPoints(); n++) {
-            Tvec.push_back(flame.value(flowdomain,flow.componentIndex("T"),n));
-            Evec.push_back(flame.value(flowdomain,
+            Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
+            Evec.push_back(flame.workValue(flowdomain,
                                         flow.componentIndex("E"),n));
-            eFieldvec.push_back(flame.value(flowdomain,
+            eFieldvec.push_back(flame.workValue(flowdomain,
                                          flow.componentIndex("eField"),n));
-            Uvec.push_back(flame.value(flowdomain,
+            Uvec.push_back(flame.workValue(flowdomain,
                                        flow.componentIndex("velocity"),n));
             zvec.push_back(flow.grid(n));
-            print("{:9.6f}\t{:8.3f}\t{:5.3f}\t{:7.5f}\n",
+            print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
                   flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
         }
 
@@ -181,9 +181,13 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         std::ofstream outfile("flamespeed.csv", std::ios::trunc);
         outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
         for (size_t n = 0; n < flow.nPoints(); n++) {
-            print(outfile, " {:11.3e}, {:11.3e}, {:11.3e}, {:11.3f}, {:11.3e}\n",
+            print(outfile, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
                   flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
         }
+
+        flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
+        flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
+
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
         std::cerr << "program terminating." << std::endl;
