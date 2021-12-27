@@ -821,7 +821,7 @@ XML_Node& StFlow::save(XML_Node& o, const doublereal* const sol)
     addFloatArray(gv,"L",x.size(),x.data(),"N/m^4");
 
     soln.getRow(c_offset_E, x.data());
-    addFloatArray(gv,"E",x.size(),x.data(),"V/m");
+    addFloatArray(gv,"eField",x.size(),x.data(),"V/m");
 
     for (size_t k = 0; k < m_nsp; k++) {
         soln.getRow(c_offset_Y+k, x.data());
