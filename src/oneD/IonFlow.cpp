@@ -46,10 +46,13 @@ IonFlow::IonFlow(IdealGasPhase* ph, size_t nsp, size_t points) :
     // Set tighter negative species limit on charged species to avoid
     // instabilities. Tolerance on electrons is even tighter to account for the
     // low "molecular" weight.
-    for (size_t k : m_kCharge) {
-        setBounds(c_offset_Y + k, -1e-14, 1.0);
-    }
-    setBounds(c_offset_Y + m_kElectron, -1e-18, 1.0);
+    // for (size_t k : m_kCharge) {
+    //     setBounds(c_offset_Y + k, -1e-10, 1.0);
+    // }
+    // setBounds(c_offset_Y + m_kElectron, -1e-10, 1.0);
+
+    // setTransientTolerances(1e-4, 1e-11);
+    // setSteadyTolerances(1e-4, 1e-9);
 
     m_refiner->setActive(c_offset_E, false);
     m_mobility.resize(m_nsp*m_points);
@@ -175,20 +178,24 @@ void IonFlow::evalResidual(double* x, double* rsd, int* diag,
         return;
     }
 
+    float voltage = 0.0;
+    float E_ex = 1e0; // V/m 
+
     for (size_t j = jmin; j <= jmax; j++) {
         if (j == 0) {
             // enforcing the flux for charged species is difficult
             // since charged species are also affected by electric
             // force, so Neumann boundary condition is used.
-            for (size_t k : m_kCharge) {
-                rsd[index(c_offset_Y + k, 0)] = Y(x,k,0) - Y(x,k,1);
-            }
-            rsd[index(c_offset_E, j)] = E(x,0);
-            diag[index(c_offset_E, j)] = 0;
+            rsd[index(c_offset_E, j)] = E(x,0) - E_ex;
+            diag[index(c_offset_E, j)] = 1;
         } else if (j == m_points - 1) {
-            rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
-            diag[index(c_offset_E, j)] = 0;
+            // rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
+            rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
+            // voltage -= E(x,j)*dz(j);
+            // rsd[index(c_offset_E, j)] = voltage - E(x,j)*dz(j) + v_ex;
+            diag[index(c_offset_E, j)] = 1;
         } else {
+            // voltage -= E(x,j)*dz(j);
             //-----------------------------------------------
             //    Electric field by Gauss's law
             //
@@ -196,8 +203,9 @@ void IonFlow::evalResidual(double* x, double* rsd, int* diag,
             //
             //    E = -dV/dz
             //-----------------------------------------------
-            rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
-            diag[index(c_offset_E, j)] = 0;
+            // rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
+            rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
+            diag[index(c_offset_E, j)] = 1;
         }
     }
 }
