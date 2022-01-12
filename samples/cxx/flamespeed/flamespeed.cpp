@@ -23,6 +23,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         double temp = 300.0; // K
         double pressure = 1.0*OneAtm; //atm
         double uin = 0.3; //m/sec
+        double eField = 1.0e0;
 
         size_t nsp = gas->nSpecies();
         vector_fp x(nsp, 0.0);
@@ -81,6 +82,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         inlet.setMoleFractions(x.data());
         double mdot=uin*rho_in;
         inlet.setMdot(mdot);
+        inlet.setEField(eField);
         inlet.setTemperature(temp);
 
 
