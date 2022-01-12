@@ -104,6 +104,8 @@ public:
     void saveResidual(const std::string& fname, const std::string& id,
                       const std::string& desc, int loglevel=1);
 
+    void print_V();
+
     /// Print to stream s the current solution for all domains.
     void showSolution(std::ostream& s);
     void showSolution();
