@@ -187,6 +187,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
         flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
+        flame.print_V();        
 
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
