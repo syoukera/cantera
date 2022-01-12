@@ -115,6 +115,18 @@ protected:
         return (E(x,j)-E(x,j-1))/(z(j)-z(j-1));
     }
 
+    double dV(const double* x, size_t j) const {
+        return (E(x, j)*(z(j) - z(j-1)));
+    }
+
+    double V_gap(const double* x) const {
+        double V_temp = 0.0;
+        for (size_t j=0; j<=m_points; j++) {
+            V_temp += dV(x, j);
+        }
+        return V_temp;
+    }
+
     //! number density
     double ND(const double* x, size_t k, size_t j) const {
         return Avogadro * m_rho[j] * Y(x,k,j) / m_wt[k];
