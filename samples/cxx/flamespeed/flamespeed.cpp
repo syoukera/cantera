@@ -142,22 +142,6 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         print("Flame speed with mixture-averaged transport: {} m/s\n",
               flameSpeed_mix);
 
-        // // now switch to multicomponent transport
-        // flow.setTransport(*trmulti);
-        // flame.solve(loglevel, refine_grid);
-        // double flameSpeed_multi = flame.value(flowdomain,
-        //                                       flow.componentIndex("velocity"),0);
-        // print("Flame speed with multicomponent transport: {} m/s\n",
-        //       flameSpeed_multi);
-
-        // // now enable Soret diffusion
-        // flow.enableSoret(true);
-        // flame.solve(loglevel, refine_grid);
-        // double flameSpeed_full = flame.value(flowdomain,
-        //                                      flow.componentIndex("velocity"),0);
-        // print("Flame speed with multicomponent transport + Soret: {} m/s\n",
-        //       flameSpeed_full);
-
         vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
 
         print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
