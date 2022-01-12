@@ -485,6 +485,8 @@ public:
     void forceFullUpdate(bool update) {
         m_force_full_update = update;
     }
+    
+    virtual double V_gap(const doublereal* x) const {}
 
 protected:
     doublereal m_rdt;
