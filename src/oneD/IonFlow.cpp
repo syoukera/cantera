@@ -186,14 +186,14 @@ void IonFlow::evalResidual(double* x, double* rsd, int* diag,
             // enforcing the flux for charged species is difficult
             // since charged species are also affected by electric
             // force, so Neumann boundary condition is used.
-            rsd[index(c_offset_E, j)] = E(x,0) - E_ex;
-            diag[index(c_offset_E, j)] = 1;
+            rsd[index(c_offset_E, j)] = E(x,0);
+            diag[index(c_offset_E, j)] = 0;
         } else if (j == m_points - 1) {
-            // rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
-            rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
+            rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
+            // rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
             // voltage -= E(x,j)*dz(j);
             // rsd[index(c_offset_E, j)] = voltage - E(x,j)*dz(j) + v_ex;
-            diag[index(c_offset_E, j)] = 1;
+            diag[index(c_offset_E, j)] = 0;
         } else {
             // voltage -= E(x,j)*dz(j);
             //-----------------------------------------------
@@ -203,9 +203,9 @@ void IonFlow::evalResidual(double* x, double* rsd, int* diag,
             //
             //    E = -dV/dz
             //-----------------------------------------------
-            // rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
-            rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
-            diag[index(c_offset_E, j)] = 1;
+            rsd[index(c_offset_E, j)] = dEdz(x,j) - rho_e(x,j) / epsilon_0;
+            // rsd[index(c_offset_E, j)] = E(x,j) - E_ex;
+            diag[index(c_offset_E, j)] = 0;
         }
     }
 }
