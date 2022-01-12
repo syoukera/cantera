@@ -6,7 +6,7 @@
 #include "cantera/oneD/Boundary1D.h"
 #include "cantera/oneD/OneDim.h"
 #include "cantera/base/ctml.h"
-#include "cantera/oneD/StFlow.h"
+#include "cantera/oneD/IonFlow.h"
 
 using namespace std;
 
@@ -21,7 +21,7 @@ Boundary1D::Boundary1D() : Domain1D(1, 1, 0.0),
     m_left_nsp(0), m_right_nsp(0),
     m_sp_left(0), m_sp_right(0),
     m_start_left(0), m_start_right(0),
-    m_phase_left(0), m_phase_right(0), m_temp(0.0), m_mdot(0.0)
+    m_phase_left(0), m_phase_right(0), m_temp(0.0), m_mdot(0.0), m_eField(0.0)
 {
     m_type = cConnectorType;
 }
@@ -43,7 +43,7 @@ void Boundary1D::_init(size_t n)
     if (m_index > 0) {
         Domain1D& r = container().domain(m_index-1);
         if (!r.isConnector()) { // flow domain
-            m_flow_left = (StFlow*)&r;
+            m_flow_left = (IonFlow*)&r;
             m_left_nv = m_flow_left->nComponents();
             m_left_points = m_flow_left->nPoints();
             m_left_loc = container().start(m_index-1);
@@ -60,7 +60,7 @@ void Boundary1D::_init(size_t n)
     if (m_index + 1 < container().nDomains()) {
         Domain1D& r = container().domain(m_index+1);
         if (!r.isConnector()) { // flow domain
-            m_flow_right = (StFlow*)&r;
+            m_flow_right = (IonFlow*)&r;
             m_right_nv = m_flow_right->nComponents();
             m_right_loc = container().start(m_index+1);
             m_right_nsp = m_right_nv - c_offset_Y;
@@ -188,6 +188,12 @@ void Inlet1D::eval(size_t jg, double* xg, double* rg,
             if (k != m_flow_right->leftExcessSpecies()) {
                 rb[c_offset_Y+k] += m_mdot*m_yin[k];
             }
+        }
+
+        // electric field
+        // apply boundary condition at inlet 
+        if (m_flow->doElectricField(0)) {
+            rb[c_offset_E] += m_eField;
         }
 
     } else {

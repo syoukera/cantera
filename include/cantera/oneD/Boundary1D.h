@@ -13,7 +13,7 @@
 #include "Domain1D.h"
 #include "cantera/thermo/SurfPhase.h"
 #include "cantera/kinetics/InterfaceKinetics.h"
-#include "StFlow.h"
+#include "IonFlow.h"
 
 namespace Cantera
 {
@@ -80,12 +80,23 @@ public:
         return m_mdot;
     }
 
+    /// Set the electric field at inlet.
+    virtual void setEField(double eField) {
+        m_eField = eField;
+    }
+
+    /// The electric field at inlet.
+    virtual double eField() {
+        return m_eField;
+    }
+
+
     virtual void setupGrid(size_t n, const double* z) {}
 
 protected:
     void _init(size_t n);
 
-    StFlow* m_flow_left, *m_flow_right;
+    IonFlow* m_flow_left, *m_flow_right;
     size_t m_ilr, m_left_nv, m_right_nv;
     size_t m_left_loc, m_right_loc;
     size_t m_left_points;
@@ -93,7 +104,7 @@ protected:
     size_t m_sp_left, m_sp_right;
     size_t m_start_left, m_start_right;
     ThermoPhase* m_phase_left, *m_phase_right;
-    double m_temp, m_mdot;
+    double m_temp, m_mdot, m_eField;
 };
 
 
@@ -155,7 +166,7 @@ protected:
     size_t m_nsp;
     vector_fp m_yin;
     std::string m_xstr;
-    StFlow* m_flow;
+    IonFlow* m_flow;
 };
 
 /**
@@ -253,7 +264,7 @@ protected:
     size_t m_nsp;
     vector_fp m_yres;
     std::string m_xstr;
-    StFlow* m_flow;
+    IonFlow* m_flow;
 };
 
 /**
