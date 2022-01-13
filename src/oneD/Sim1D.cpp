@@ -105,9 +105,9 @@ void Sim1D::saveResidual(const std::string& fname, const std::string& id,
     OneDim::save(fname, id, desc, &res[0], loglevel);
 }
 
-void Sim1D::print_V()
+double Sim1D::gapVoltage()
 {
-    std::cout << "Gap voltage: " << domain(1).V_gap(m_x.data()) << std::endl;
+    return domain(1).V_gap(m_x.data());
 }
 
 void Sim1D::restore(const std::string& fname, const std::string& id,
