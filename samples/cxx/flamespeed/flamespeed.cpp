@@ -135,7 +135,6 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         flow.setSolvingStage(1);
         flame.solve(loglevel,refine_grid);
 
-        vector_fp zvec,Tvec,Elevec,eFieldvec,Uvec;
         vector_fp Evec, Vvec;
 
         for (double eField = 1.0e0; eField!=512.0e0; eField*=2.0)
@@ -155,23 +154,6 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
             Evec.push_back(eField);
             Vvec.push_back(V_gap);
             std::cout << "Electric Field" << eField << "Gap voltage: " << V_gap << std::endl;
-            
-            // print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
-            //     "z (m)", "T (K)", "Y(E)", "eField (V/m)");
-
-            for (size_t n = 0; n < flow.nPoints(); n++) {
-                Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
-                Elevec.push_back(flame.workValue(flowdomain,
-                                            flow.componentIndex("E"),n));
-                eFieldvec.push_back(flame.workValue(flowdomain,
-                                            flow.componentIndex("eField"),n));
-                Uvec.push_back(flame.workValue(flowdomain,
-                                        flow.componentIndex("velocity"),n));
-                zvec.push_back(flow.grid(n));
-
-                // print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
-                //     flow.grid(n), Tvec[n], Elevec[n], eFieldvec[n]);
-            }
         }
 
         for (size_t i; i!=Evec.size(); i++)
@@ -185,6 +167,25 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
             print(outfile, " {:16.12e}, {:16.12e}\n", Evec[n], Vvec[n]);
         }
         outfile.close();
+
+        
+        vector_fp zvec,Tvec,Elevec,eFieldvec,Uvec;
+        // print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
+        //     "z (m)", "T (K)", "Y(E)", "eField (V/m)");
+
+        for (size_t n = 0; n < flow.nPoints(); n++) {
+            Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
+            Elevec.push_back(flame.workValue(flowdomain,
+                                        flow.componentIndex("E"),n));
+            eFieldvec.push_back(flame.workValue(flowdomain,
+                                        flow.componentIndex("eField"),n));
+            Uvec.push_back(flame.workValue(flowdomain,
+                                    flow.componentIndex("velocity"),n));
+            zvec.push_back(flow.grid(n));
+
+            // print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
+            //     flow.grid(n), Tvec[n], Elevec[n], eFieldvec[n]);
+        }
         
         // print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
         // print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
