@@ -23,7 +23,6 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         double temp = 300.0; // K
         double pressure = 1.0*OneAtm; //atm
         double uin = 0.3; //m/sec
-        double eField = 1.0e0;
 
         size_t nsp = gas->nSpecies();
         vector_fp x(nsp, 0.0);
@@ -82,7 +81,6 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         inlet.setMoleFractions(x.data());
         double mdot=uin*rho_in;
         inlet.setMdot(mdot);
-        inlet.setEField(eField);
         inlet.setTemperature(temp);
 
 
@@ -136,44 +134,50 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         flow.setSolvingStage(1);
         flame.solve(loglevel,refine_grid);
-        flow.setSolvingStage(2);
-        flame.solve(loglevel,refine_grid);
 
-        double flameSpeed_mix = flame.value(flowdomain,
-                                            flow.componentIndex("velocity"),0);
-        print("Flame speed with mixture-averaged transport: {} m/s\n",
-              flameSpeed_mix);
+        {   
+            double eField = 0.0e0;
+            inlet.setEField(eField);
 
-        vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
+            flow.setSolvingStage(2);
+            flame.solve(loglevel,refine_grid);
 
-        print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
-              "z (m)", "T (K)", "Y(E)", "eField (V/m)");
-        for (size_t n = 0; n < flow.nPoints(); n++) {
-            Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
-            Evec.push_back(flame.workValue(flowdomain,
-                                        flow.componentIndex("E"),n));
-            eFieldvec.push_back(flame.workValue(flowdomain,
-                                         flow.componentIndex("eField"),n));
-            Uvec.push_back(flame.workValue(flowdomain,
-                                       flow.componentIndex("velocity"),n));
-            zvec.push_back(flow.grid(n));
-            print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
-                  flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
+            double flameSpeed_mix = flame.value(flowdomain,
+                                                flow.componentIndex("velocity"),0);
+            print("Flame speed with mixture-averaged transport: {} m/s\n",
+                flameSpeed_mix);
+
+            vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
+
+            print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
+                "z (m)", "T (K)", "Y(E)", "eField (V/m)");
+            for (size_t n = 0; n < flow.nPoints(); n++) {
+                Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
+                Evec.push_back(flame.workValue(flowdomain,
+                                            flow.componentIndex("E"),n));
+                eFieldvec.push_back(flame.workValue(flowdomain,
+                                            flow.componentIndex("eField"),n));
+                Uvec.push_back(flame.workValue(flowdomain,
+                                        flow.componentIndex("velocity"),n));
+                zvec.push_back(flow.grid(n));
+                print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
+                    flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
+            }
+
+            print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
+            print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
+
+            std::ofstream outfile("flamespeed.csv", std::ios::trunc);
+            outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
+            for (size_t n = 0; n < flow.nPoints(); n++) {
+                print(outfile, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
+                    flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
+            }
+
+            // flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
+            // flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
+            std::cout << "Gap voltage" << flame.gapVoltage() << std::endl;
         }
-
-        print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
-        print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
-
-        std::ofstream outfile("flamespeed.csv", std::ios::trunc);
-        outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
-        for (size_t n = 0; n < flow.nPoints(); n++) {
-            print(outfile, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
-                  flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
-        }
-
-        flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
-        flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
-        flame.print_V();        
 
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
