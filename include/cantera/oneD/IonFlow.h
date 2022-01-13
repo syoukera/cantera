@@ -122,7 +122,7 @@ protected:
     double V_gap(const double* x) const {
         double V_temp = 0.0;
         for (size_t j=1; j<=m_points; j++) {
-            V_temp += dV(x, j);
+            V_temp -= dV(x, j);
         }
         return V_temp;
     }
