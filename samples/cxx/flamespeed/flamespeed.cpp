@@ -138,7 +138,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         vector_fp zvec,Tvec,Elevec,eFieldvec,Uvec;
         vector_fp Evec, Vvec;
 
-        for (double eField = 1.0e0; eField<1.0e3; eField*=2.0)
+        for (double eField = 1.0e0; eField!=512.0e0; eField*=2.0)
         {   
             // double eField = 1.0e0;
             inlet.setEField(eField);
@@ -174,14 +174,14 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
             }
         }
 
-        for (size_t i; i<=Evec.size(); i++)
+        for (size_t i; i!=Evec.size(); i++)
         {   
             std::cout << Evec[i] << Vvec[i] << std::endl;
         }
 
         std::ofstream outfile("gapvoltage.csv", std::ios::trunc);
         outfile << "  eField,   gapVoltage\n";
-        for (size_t n = 0; n < Evec.size(); n++) {
+        for (size_t n = 0; n != Evec.size(); n++) {
             print(outfile, " {:16.12e}, {:16.12e}\n", Evec[n], Vvec[n]);
         }
         outfile.close();
