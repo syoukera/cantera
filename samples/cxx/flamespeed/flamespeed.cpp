@@ -135,6 +135,7 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         flow.setSolvingStage(1);
         flame.solve(loglevel,refine_grid);
 
+        vector_fp zvec,Tvec,Elevec,eFieldvec,Uvec;
         vector_fp Evec, Vvec;
 
         for (double eField = 1.0e0; eField<1.0e3; eField*=2.0)
@@ -150,39 +151,27 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
             print("Flame speed with mixture-averaged transport: {} m/s\n",
                 flameSpeed_mix);
 
-            // vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
-
-            // print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
-            //     "z (m)", "T (K)", "Y(E)", "eField (V/m)");
-            // for (size_t n = 0; n < flow.nPoints(); n++) {
-            //     Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
-            //     Evec.push_back(flame.workValue(flowdomain,
-            //                                 flow.componentIndex("E"),n));
-            //     eFieldvec.push_back(flame.workValue(flowdomain,
-            //                                 flow.componentIndex("eField"),n));
-            //     Uvec.push_back(flame.workValue(flowdomain,
-            //                             flow.componentIndex("velocity"),n));
-            //     zvec.push_back(flow.grid(n));
-            //     print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
-            //         flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
-            // }
-
-            // print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
-            // print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
-
-            // std::ofstream outfile("flamespeed.csv", std::ios::trunc);
-            // outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
-            // for (size_t n = 0; n < flow.nPoints(); n++) {
-            //     print(outfile, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
-            //         flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
-            // }
-
-            // flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
-            // flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
             double V_gap = flame.gapVoltage();
             Evec.push_back(eField);
             Vvec.push_back(V_gap);
             std::cout << "Electric Field" << eField << "Gap voltage: " << V_gap << std::endl;
+            
+            // print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
+            //     "z (m)", "T (K)", "Y(E)", "eField (V/m)");
+
+            for (size_t n = 0; n < flow.nPoints(); n++) {
+                Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
+                Elevec.push_back(flame.workValue(flowdomain,
+                                            flow.componentIndex("E"),n));
+                eFieldvec.push_back(flame.workValue(flowdomain,
+                                            flow.componentIndex("eField"),n));
+                Uvec.push_back(flame.workValue(flowdomain,
+                                        flow.componentIndex("velocity"),n));
+                zvec.push_back(flow.grid(n));
+
+                // print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
+                //     flow.grid(n), Tvec[n], Elevec[n], eFieldvec[n]);
+            }
         }
 
         for (size_t i; i<=Evec.size(); i++)
@@ -195,7 +184,21 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         for (size_t n = 0; n < Evec.size(); n++) {
             print(outfile, " {:16.12e}, {:16.12e}\n", Evec[n], Vvec[n]);
         }
+        outfile.close();
+        
+        // print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
+        // print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
 
+        std::ofstream outfile2("flamespeed.csv", std::ios::trunc);
+        outfile2 << "  Grid,   Temperature,   Uvec,   E,    eField\n";
+        for (size_t n = 0; n < flow.nPoints(); n++) {
+            print(outfile2, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
+                flow.grid(n), Tvec[n], Uvec[n], Elevec[n], eFieldvec[n]);
+        }
+        outfile2.close();
+
+        flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
+        flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
 
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
