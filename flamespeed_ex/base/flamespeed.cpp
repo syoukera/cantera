@@ -159,9 +159,14 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         // {   
         //     std::cout << Evec[i] << Vvec[i] << std::endl;
         // }
-
-        std::string fname_csv_V = "gapvoltage_phi" + std::to_string(phi)  
-                                    + "_eField" + std::to_string(eField) + ".csv";
+        
+        char c_fname_base[40];
+        sprintf(c_fname_base, "phi%0.1f_eField%0.1f", phi, eField);
+        std::string fname_base(c_fname_base);
+                       
+        std::string fname_csv_V = fname_base + "/" + fname_base + "_gapvoltage.csv";
+        // std::string fname_csv_V = "gapvoltage_phi" + std::to_string(phi)  
+        //                             + "_eField" + std::to_string(eField) + ".csv";
         std::ofstream outfile(fname_csv_V, std::ios::trunc);
         outfile << "eField, gapVoltage\n";
         for (size_t n = 0; n != Evec.size(); n++) {
@@ -191,8 +196,7 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         // print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
         // print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
 
-        std::string fname_csv = "flamespeed_phi" + std::to_string(phi)  
-                                    + "_eField" + std::to_string(eField) + ".csv";
+        std::string fname_csv = fname_base + "/" + fname_base + "_flamespeed.csv";
         std::ofstream outfile2(fname_csv, std::ios::trunc);
         outfile2 << "  Grid,   Temperature,   Uvec,   E,    eField\n";
         for (size_t n = 0; n < flow.nPoints(); n++) {
@@ -201,8 +205,9 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         }
         outfile2.close();
 
-        std::string fname_solution = "flamespeed_phi" + std::to_string(phi)  
-                                    + "_eField" + std::to_string(eField) + ".xml";
+        // std::string fname_solution = "flamespeed_phi" + std::to_string(phi)  
+        //                             + "_eField" + std::to_string(eField) + ".xml";                  
+        std::string fname_solution = fname_base + "/" + fname_base + "_flamespeed.xml";
         flame.save(fname_solution, "sol", "Solutions", loglevel);
         // flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
 
