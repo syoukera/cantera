@@ -138,30 +138,27 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         vector_fp Evec, Vvec;
         double V_gap;
 
-        for (double eField = 1.0e0; eField<1e5; eField*=2.0)
-        {   
-            // double eField = 1.0e0;
-            inlet.setEField(eField);
+        double eField = 1.0e0;
+        inlet.setEField(eField);
 
-            flow.setSolvingStage(2);
-            try {
-                flame.solve(loglevel,refine_grid);
-                V_gap = flame.gapVoltage();
-            } catch (CanteraError& err) {
-                std::cerr << err.what() << std::endl;
-                std::cerr << "program terminating." << std::endl;
-                V_gap = std::numeric_limits<double>::quiet_NaN();
-            }
-
-            Evec.push_back(eField);
-            Vvec.push_back(V_gap);
-            std::cout << "Electric Field" << eField << "Gap voltage: " << V_gap << std::endl;
+        flow.setSolvingStage(2);
+        try {
+            flame.solve(loglevel,refine_grid);
+            V_gap = flame.gapVoltage();
+        } catch (CanteraError& err) {
+            std::cerr << err.what() << std::endl;
+            std::cerr << "program terminating." << std::endl;
+            V_gap = std::numeric_limits<double>::quiet_NaN();
         }
 
-        for (size_t i; i!=Evec.size(); i++)
-        {   
-            std::cout << Evec[i] << Vvec[i] << std::endl;
-        }
+        Evec.push_back(eField);
+        Vvec.push_back(V_gap);
+        std::cout << "Electric Field: " << eField << " Gap voltage: " << V_gap << std::endl;
+
+        // for (size_t i; i!=Evec.size(); i++)
+        // {   
+        //     std::cout << Evec[i] << Vvec[i] << std::endl;
+        // }
 
         std::ofstream outfile("gapvoltage.csv", std::ios::trunc);
         outfile << "  eField,   gapVoltage\n";
