@@ -160,7 +160,9 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         //     std::cout << Evec[i] << Vvec[i] << std::endl;
         // }
 
-        std::ofstream outfile("gapvoltage.csv", std::ios::trunc);
+        std::string fname_csv_V = "gapvoltage_phi" + std::to_string(phi)  
+                                    + "_eField" + std::to_string(eField) + ".csv";
+        std::ofstream outfile(fname_csv_V, std::ios::trunc);
         outfile << "eField, gapVoltage\n";
         for (size_t n = 0; n != Evec.size(); n++) {
             print(outfile, " {:16.12e}, {:16.12e}\n", Evec[n], Vvec[n]);
@@ -189,7 +191,9 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         // print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
         // print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
 
-        std::ofstream outfile2("flamespeed.csv", std::ios::trunc);
+        std::string fname_csv = "flamespeed_phi" + std::to_string(phi)  
+                                    + "_eField" + std::to_string(eField) + ".csv";
+        std::ofstream outfile2(fname_csv, std::ios::trunc);
         outfile2 << "  Grid,   Temperature,   Uvec,   E,    eField\n";
         for (size_t n = 0; n < flow.nPoints(); n++) {
             print(outfile2, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
@@ -197,8 +201,10 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         }
         outfile2.close();
 
-        flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
-        flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
+        std::string fname_solution = "flamespeed_phi" + std::to_string(phi)  
+                                    + "_eField" + std::to_string(eField) + ".xml";
+        flame.save(fname_solution, "sol", "Solutions", loglevel);
+        // flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
 
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
