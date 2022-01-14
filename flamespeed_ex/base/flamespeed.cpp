@@ -161,7 +161,7 @@ int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
         // }
 
         std::ofstream outfile("gapvoltage.csv", std::ios::trunc);
-        outfile << "  eField,   gapVoltage\n";
+        outfile << "eField, gapVoltage\n";
         for (size_t n = 0; n != Evec.size(); n++) {
             print(outfile, " {:16.12e}, {:16.12e}\n", Evec[n], Vvec[n]);
         }
