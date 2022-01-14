@@ -61,4 +61,4 @@ doc/sphinx/matlab/zero-dim.rst
 .vscode
 samples/cxx/flamespeed/flamespeed
 samples/cxx/flamespeed/*.xml
-samples/cxx/flamespeed/flamespeed.csv
+samples/cxx/flamespeed/*.csv
