@@ -136,21 +136,23 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         flame.solve(loglevel,refine_grid);
 
         vector_fp Evec, Vvec;
+        double V_gap;
 
-        for (double eField = 1.0e0; eField!=512.0e0; eField*=2.0)
+        for (double eField = 1.0e0; eField<1e5; eField*=2.0)
         {   
             // double eField = 1.0e0;
             inlet.setEField(eField);
 
             flow.setSolvingStage(2);
-            flame.solve(loglevel,refine_grid);
+            try {
+                flame.solve(loglevel,refine_grid);
+                V_gap = flame.gapVoltage();
+            } catch (CanteraError& err) {
+                std::cerr << err.what() << std::endl;
+                std::cerr << "program terminating." << std::endl;
+                V_gap = std::numeric_limits<double>::quiet_NaN();
+            }
 
-            double flameSpeed_mix = flame.value(flowdomain,
-                                                flow.componentIndex("velocity"),0);
-            print("Flame speed with mixture-averaged transport: {} m/s\n",
-                flameSpeed_mix);
-
-            double V_gap = flame.gapVoltage();
             Evec.push_back(eField);
             Vvec.push_back(V_gap);
             std::cout << "Electric Field" << eField << "Gap voltage: " << V_gap << std::endl;
