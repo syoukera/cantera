@@ -63,3 +63,4 @@ flamespeed
 *.xml
 *.csv
 flamespeed_ex/run/*
+log*
