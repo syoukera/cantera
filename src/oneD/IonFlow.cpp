@@ -46,10 +46,10 @@ IonFlow::IonFlow(IdealGasPhase* ph, size_t nsp, size_t points) :
     // Set tighter negative species limit on charged species to avoid
     // instabilities. Tolerance on electrons is even tighter to account for the
     // low "molecular" weight.
-    // for (size_t k : m_kCharge) {
-    //     setBounds(c_offset_Y + k, -1e-10, 1.0);
-    // }
-    // setBounds(c_offset_Y + m_kElectron, -1e-10, 1.0);
+    for (size_t k : m_kCharge) {
+        setBounds(c_offset_Y + k, -1e-14, 1.0);
+    }
+    setBounds(c_offset_Y + m_kElectron, -1e-18, 1.0);
 
     // setTransientTolerances(1e-4, 1e-11);
     // setSteadyTolerances(1e-4, 1e-9);
