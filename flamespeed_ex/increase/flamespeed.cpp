@@ -15,7 +15,7 @@
 using namespace Cantera;
 using fmt::print;
 
-int flamespeed(double phi, bool refine_grid, int loglevel)
+int flamespeed(double phi, double eField, bool refine_grid, int loglevel)
 {
     try {
         auto sol = newSolution("gri30_ion.yaml", "gas", "None");
@@ -138,24 +138,22 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         vector_fp Evec, Vvec;
         double V_gap;
 
-        for (double eField = 1.0e0; eField <= 1.0e4; eField += 1.0e3) {
-            inlet.setEField(eField);
+        // double eField = 1.0e0;
+        inlet.setEField(eField);
 
-            flow.setSolvingStage(2);
-            try {
-                flame.solve(loglevel,refine_grid);
-                V_gap = flame.gapVoltage();
-            } catch (CanteraError& err) {
-                std::cerr << err.what() << std::endl;
-                std::cerr << "program terminating." << std::endl;
-                V_gap = std::numeric_limits<double>::quiet_NaN();
-            }
-
-            // save data
-            Evec.push_back(eField);
-            Vvec.push_back(V_gap);
-            std::cout << "Electric Field: " << eField << " Gap voltage: " << V_gap << std::endl;
+        flow.setSolvingStage(2);
+        try {
+            flame.solve(loglevel,refine_grid);
+            V_gap = flame.gapVoltage();
+        } catch (CanteraError& err) {
+            std::cerr << err.what() << std::endl;
+            std::cerr << "program terminating." << std::endl;
+            V_gap = std::numeric_limits<double>::quiet_NaN();
         }
+
+        Evec.push_back(eField);
+        Vvec.push_back(V_gap);
+        std::cout << "Electric Field: " << eField << " Gap voltage: " << V_gap << std::endl;
 
         // for (size_t i; i!=Evec.size(); i++)
         // {   
@@ -233,10 +231,16 @@ int main(int argc, char** argv)
         std::cin >> phi;
     }
     if (argc >= 3) {
-        refine_grid = bool(intValue(argv[2]));
+        eField = fpValue(argv[2]);
+    } else {
+        print("Enter phi: ");
+        std::cin >> eField;
     }
     if (argc >= 4) {
-        loglevel = intValue(argv[3]);
+        refine_grid = bool(intValue(argv[3]));
     }
-    return flamespeed(phi, refine_grid, loglevel);
+    if (argc >= 5) {
+        loglevel = intValue(argv[4]);
+    }
+    return flamespeed(phi, eField, refine_grid, loglevel);
 }
