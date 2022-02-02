@@ -65,7 +65,7 @@ public:
                               vector_fp& mobi_e);
 
     //! Fixed external electric field [V/m]
-    double m_exEfield = 2.0e0;                     
+    double m_exEfield = 0.0e0;                     
 
 protected:
     /*!
