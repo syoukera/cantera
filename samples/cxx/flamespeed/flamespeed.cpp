@@ -14,6 +14,7 @@
 #include "cantera/oneD/Sim1D.h"
 #include "cantera/oneD/Boundary1D.h"
 #include "cantera/oneD/StFlow.h"
+#include "cantera/oneD/IonFlow.h"
 #include "cantera/thermo/IdealGasPhase.h"
 #include "cantera/transport.h"
 #include "cantera/base/Solution.h"
@@ -26,7 +27,7 @@ using fmt::print;
 int flamespeed(double phi, bool refine_grid, int loglevel)
 {
     try {
-        auto sol = newSolution("gri30.yaml", "gri30", "None");
+        auto sol = newSolution("gri30_ion.yaml", "gas", "None");
         auto gas = sol->thermo();
         double temp = 300.0; // K
         double pressure = 1.0*OneAtm; //atm
@@ -56,7 +57,8 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
 
         //-------- step 1: create the flow -------------
 
-        StFlow flow(gas);
+        IonFlow flow(gas);
+        // StFlow flow(gas);
         flow.setFreeFlow();
 
         // create an initial grid
@@ -73,8 +75,9 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         // specify the objects to use to compute kinetic rates and
         // transport properties
 
-        std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
-        std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
+        std::unique_ptr<Transport> trmix(newTransportMgr("Ion", sol->thermo().get()));
+        // std::unique_ptr<Transport> trmix(newTransportMgr("Mix", sol->thermo().get()));
+        // std::unique_ptr<Transport> trmulti(newTransportMgr("Multi", sol->thermo().get()));
 
         flow.setTransport(*trmix);
         flow.setKinetics(*sol->kinetics());
@@ -136,54 +139,64 @@ int flamespeed(double phi, bool refine_grid, int loglevel)
         flame.setFixedTemperature(0.5 * (temp + Tad));
         flow.solveEnergyEqn();
 
+        flow.solveElectricField();
+
+        flow.setSolvingStage(1);
         flame.solve(loglevel,refine_grid);
+        flow.setSolvingStage(2);
+        flame.solve(loglevel,refine_grid);
+
         double flameSpeed_mix = flame.value(flowdomain,
                                             flow.componentIndex("velocity"),0);
         print("Flame speed with mixture-averaged transport: {} m/s\n",
               flameSpeed_mix);
 
-        // now switch to multicomponent transport
-        flow.setTransport(*trmulti);
-        flame.solve(loglevel, refine_grid);
-        double flameSpeed_multi = flame.value(flowdomain,
-                                              flow.componentIndex("velocity"),0);
-        print("Flame speed with multicomponent transport: {} m/s\n",
-              flameSpeed_multi);
+        // // now switch to multicomponent transport
+        // flow.setTransport(*trmulti);
+        // flame.solve(loglevel, refine_grid);
+        // double flameSpeed_multi = flame.value(flowdomain,
+        //                                       flow.componentIndex("velocity"),0);
+        // print("Flame speed with multicomponent transport: {} m/s\n",
+        //       flameSpeed_multi);
 
-        // now enable Soret diffusion
-        flow.enableSoret(true);
-        flame.solve(loglevel, refine_grid);
-        double flameSpeed_full = flame.value(flowdomain,
-                                             flow.componentIndex("velocity"),0);
-        print("Flame speed with multicomponent transport + Soret: {} m/s\n",
-              flameSpeed_full);
+        // // now enable Soret diffusion
+        // flow.enableSoret(true);
+        // flame.solve(loglevel, refine_grid);
+        // double flameSpeed_full = flame.value(flowdomain,
+        //                                      flow.componentIndex("velocity"),0);
+        // print("Flame speed with multicomponent transport + Soret: {} m/s\n",
+        //       flameSpeed_full);
 
-        vector_fp zvec,Tvec,COvec,CO2vec,Uvec;
+        vector_fp zvec,Tvec,Evec,eFieldvec,Uvec;
 
         print("\n{:9s}\t{:8s}\t{:5s}\t{:7s}\n",
-              "z (m)", "T (K)", "U (m/s)", "Y(CO)");
+              "z (m)", "T (K)", "Y(E)", "eField (V/m)");
         for (size_t n = 0; n < flow.nPoints(); n++) {
-            Tvec.push_back(flame.value(flowdomain,flow.componentIndex("T"),n));
-            COvec.push_back(flame.value(flowdomain,
-                                        flow.componentIndex("CO"),n));
-            CO2vec.push_back(flame.value(flowdomain,
-                                         flow.componentIndex("CO2"),n));
-            Uvec.push_back(flame.value(flowdomain,
+            Tvec.push_back(flame.workValue(flowdomain,flow.componentIndex("T"),n));
+            Evec.push_back(flame.workValue(flowdomain,
+                                        flow.componentIndex("E"),n));
+            eFieldvec.push_back(flame.workValue(flowdomain,
+                                         flow.componentIndex("eField"),n));
+            Uvec.push_back(flame.workValue(flowdomain,
                                        flow.componentIndex("velocity"),n));
             zvec.push_back(flow.grid(n));
-            print("{:9.6f}\t{:8.3f}\t{:5.3f}\t{:7.5f}\n",
-                  flow.grid(n), Tvec[n], Uvec[n], COvec[n]);
+            print("{:9.6f}\t{:8.3e}\t{:8.3e}\t{:7.5f}\n",
+                  flow.grid(n), Tvec[n], Evec[n], eFieldvec[n]);
         }
 
         print("\nAdiabatic flame temperature from equilibrium is: {}\n", Tad);
         print("Flame speed for phi={} is {} m/s.\n", phi, Uvec[0]);
 
         std::ofstream outfile("flamespeed.csv", std::ios::trunc);
-        outfile << "  Grid,   Temperature,   Uvec,   CO,    CO2\n";
+        outfile << "  Grid,   Temperature,   Uvec,   E,    eField\n";
         for (size_t n = 0; n < flow.nPoints(); n++) {
-            print(outfile, " {:11.3e}, {:11.3e}, {:11.3e}, {:11.3e}, {:11.3e}\n",
-                  flow.grid(n), Tvec[n], Uvec[n], COvec[n], CO2vec[n]);
+            print(outfile, " {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}, {:16.12e}\n",
+                  flow.grid(n), Tvec[n], Uvec[n], Evec[n], eFieldvec[n]);
         }
+
+        flame.save("flamespeed_sol.xml", "sol", "Solutions", loglevel);
+        flame.saveResidual("flamespeed_res.xml", "res", "Resitudals", loglevel);
+
     } catch (CanteraError& err) {
         std::cerr << err.what() << std::endl;
         std::cerr << "program terminating." << std::endl;
