@@ -64,6 +64,9 @@ public:
                               vector_fp& diff_e,
                               vector_fp& mobi_e);
 
+    //! Fixed external electric field [V/m]
+    double m_exEfield = 2.0e0;                     
+
 protected:
     /*!
      * This function overloads the original function. The residual function
